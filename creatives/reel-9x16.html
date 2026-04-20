@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<title>Criativo Reel 9:16 — Yahzzi Labs</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: 608px;
+    height: 1080px;
+    overflow: hidden;
+    font-family: 'Montserrat', 'Arial Black', sans-serif;
+    background: #060c1a;
+  }
+
+  .ad {
+    width: 608px;
+    height: 1080px;
+    position: relative;
+    background: linear-gradient(170deg, #060c1a 0%, #0b1628 50%, #060c1a 100%);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 44px 36px 40px;
+  }
+
+  /* Grid BG */
+  .ad::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,100,255,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,100,255,0.05) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+
+  /* Glows */
+  .glow-top {
+    position: absolute;
+    width: 350px; height: 350px;
+    background: radial-gradient(circle, rgba(0,90,255,0.18) 0%, transparent 70%);
+    top: -60px; right: -60px;
+    pointer-events: none;
+  }
+  .glow-mid {
+    position: absolute;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(255,180,0,0.1) 0%, transparent 70%);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+  .glow-bot {
+    position: absolute;
+    width: 280px; height: 280px;
+    background: radial-gradient(circle, rgba(0,180,255,0.09) 0%, transparent 70%);
+    bottom: -60px; left: -40px;
+    pointer-events: none;
+  }
+
+  /* Accent line */
+  .side-accent {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 5px;
+    background: linear-gradient(180deg, #0050ff 0%, #00c3ff 50%, transparent 100%);
+    z-index: 10;
+  }
+
+  /* TOP */
+  .top { position: relative; z-index: 2; }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(255,50,50,0.12);
+    border: 1.5px solid rgba(255,80,80,0.35);
+    border-radius: 50px;
+    padding: 6px 16px;
+    margin-bottom: 18px;
+  }
+  .badge-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #ff4444;
+  }
+  .badge span {
+    font-size: 11px;
+    font-weight: 800;
+    color: #ff6060;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+
+  .hook {
+    font-size: 52px;
+    font-weight: 900;
+    line-height: 1.0;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: -0.5px;
+  }
+  .hook .yellow { color: #FFB800; }
+  .hook .red    { color: #ff4444; }
+  .hook .blue   { color: #4da6ff; }
+
+  .hook-sub {
+    margin-top: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.6);
+    line-height: 1.5;
+  }
+  .hook-sub strong { color: #fff; }
+
+  /* MIDDLE */
+  .middle { position: relative; z-index: 2; }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 800;
+    color: #FFB800;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .produtos-list {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    margin-bottom: 20px;
+  }
+  .produto-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 11px 15px;
+  }
+  .produto-row .icon { font-size: 20px; flex-shrink: 0; }
+  .produto-row .nome {
+    font-size: 14px;
+    font-weight: 800;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    flex: 1;
+  }
+  .produto-row .check {
+    font-size: 13px;
+    color: #00d084;
+    font-weight: 800;
+  }
+
+  /* 100 unidades highlight */
+  .highlight-box {
+    background: linear-gradient(135deg, rgba(255,184,0,0.14), rgba(255,106,0,0.08));
+    border: 1.5px solid rgba(255,184,0,0.3);
+    border-radius: 14px;
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+  .highlight-num {
+    font-size: 44px;
+    font-weight: 900;
+    color: #FFB800;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .highlight-text {}
+  .highlight-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .highlight-desc {
+    font-size: 15px;
+    font-weight: 800;
+    color: #fff;
+    text-transform: uppercase;
+    line-height: 1.2;
+    margin-top: 2px;
+  }
+  .highlight-fine {
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+    font-weight: 600;
+    margin-top: 3px;
+  }
+
+  /* Público */
+  .publico-wrap {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .publico-label-sm {
+    font-size: 11px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.35);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 4px;
+    flex-basis: 100%;
+    margin-bottom: 6px;
+  }
+  .tag {
+    font-size: 11px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.75);
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 50px;
+    padding: 5px 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* BOTTOM */
+  .bottom {
+    position: relative;
+    z-index: 2;
+  }
+
+  .cta-full {
+    background: linear-gradient(135deg, #FFB800, #ff6a00);
+    color: #000;
+    font-size: 17px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    padding: 19px 20px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: 0 8px 30px rgba(255,184,0,0.3);
+    margin-bottom: 14px;
+  }
+
+  .brand-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .brand-name {
+    font-size: 16px;
+    font-weight: 900;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+  .brand-sub {
+    font-size: 10px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.35);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+  .swipe-hint {
+    font-size: 11px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+<div class="ad">
+  <div class="side-accent"></div>
+  <div class="glow-top"></div>
+  <div class="glow-mid"></div>
+  <div class="glow-bot"></div>
+
+  <!-- TOP -->
+  <div class="top">
+    <div class="badge">
+      <div class="badge-dot"></div>
+      <span>Creators • Lojistas • Distribuidores</span>
+    </div>
+
+    <div class="hook">
+      Ainda<br>
+      <span class="red">vende</span><br>
+      marca<br>
+      <span class="red">dos</span><br>
+      <span class="yellow">outros?</span>
+    </div>
+
+    <div class="hook-sub">
+      Você está <strong>financiando o ativo</strong><br>
+      de outra pessoa. <strong>Pare agora.</strong>
+    </div>
+  </div>
+
+  <!-- MIDDLE -->
+  <div class="middle">
+    <div class="section-label">Fabricamos para você</div>
+
+    <div class="produtos-list">
+      <div class="produto-row">
+        <span class="icon">💊</span>
+        <span class="nome">Cápsulas</span>
+        <span class="check">✓</span>
+      </div>
+      <div class="produto-row">
+        <span class="icon">🧃</span>
+        <span class="nome">Solúveis</span>
+        <span class="check">✓</span>
+      </div>
+      <div class="produto-row">
+        <span class="icon">🍬</span>
+        <span class="nome">Gummies</span>
+        <span class="check">✓</span>
+      </div>
+      <div class="produto-row">
+        <span class="icon">🍫</span>
+        <span class="nome">Chocolates Funcionais</span>
+        <span class="check">✓</span>
+      </div>
+      <div class="produto-row">
+        <span class="icon">🍭</span>
+        <span class="nome">Caramelos</span>
+        <span class="check">✓</span>
+      </div>
+      <div class="produto-row">
+        <span class="icon">✨</span>
+        <span class="nome">Cosméticos</span>
+        <span class="check">✓</span>
+      </div>
+    </div>
+
+    <div class="highlight-box">
+      <div class="highlight-num">100</div>
+      <div class="highlight-text">
+        <div class="highlight-label">A partir de</div>
+        <div class="highlight-desc">unidades já é<br>possível começar</div>
+        <div class="highlight-fine">Fórmula · Embalagem · Branding · Estratégia</div>
+      </div>
+    </div>
+
+    <div class="publico-wrap">
+      <div class="publico-label-sm">Para quem é isso:</div>
+      <div class="tag">Creators</div>
+      <div class="tag">Influencers</div>
+      <div class="tag">UGC</div>
+      <div class="tag">Lojistas</div>
+      <div class="tag">Distribuidoras</div>
+      <div class="tag">Drogarias</div>
+      <div class="tag">E-commerce</div>
+      <div class="tag">Produtores Digitais</div>
+    </div>
+  </div>
+
+  <!-- BOTTOM -->
+  <div class="bottom">
+    <div class="cta-full">
+      Quero criar minha marca →
+    </div>
+    <div class="brand-row">
+      <div>
+        <div class="brand-name">Yahzzi Labs</div>
+        <div class="brand-sub">Suplementos · Cosméticos · Marca Própria</div>
+      </div>
+      <div class="swipe-hint">▲ Saiba mais</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

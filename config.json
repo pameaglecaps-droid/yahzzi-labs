@@ -1,0 +1,70 @@
+{
+  "brand": {
+    "name": "Yahzzi Labs",
+    "displayName": "Yahzzi Labs",
+    "slug": "yahzzi-labs",
+    "businessType": "service",
+    "region": "BR"
+  },
+  "meta": {
+    "accounts": [
+      {"id": "act_249595441105103", "name": "Conta Principal", "currency": "BRL"}
+    ],
+    "pixelId": "840406751724390",
+    "appId": "840406751724390",
+    "appSecret": "349cf7582b8db88bf16471b61c7f3d22",
+    "apiVersion": "v20.0",
+    "campaignObjective": "LEAD_GENERATION",
+    "whatsappObjective": "MESSAGES",
+    "minimumDailyBudgetBRL": 6
+  },
+  "tiktok": {
+    "enabled": false
+  },
+  "shopify": {
+    "enabled": false
+  },
+  "stripe": {
+    "enabled": false
+  },
+  "safety": {
+    "targetCPL": 8,
+    "maxCPL": 20,
+    "minLeadsToEvaluate": 3,
+    "killCPLMultiplier": 2.5,
+    "killSpendThreshold": 10,
+    "killCTRThreshold": 0.5,
+    "killFrequencyMax": 3.5,
+    "autoScale": false,
+    "maxBudgetIncrease": 0.20,
+    "budgetCooldownDays": 2,
+    "scaleMinLeads": 20,
+    "scaleGoodCPL": 5,
+    "maxPausesPerDay": 5,
+    "maxBudgetChangesPerDay": 0,
+    "maxDailyBudget": 30,
+    "minDailyBudget": 6
+  },
+  "whatsapp": {
+    "number": "5511993581819",
+    "link": "https://wa.me/5511993581819",
+    "greetingMessage": "Olá! Vi seu anúncio e tenho interesse em saber mais sobre os serviços da Yahzzi Labs."
+  },
+  "leadForm": {
+    "fields": ["nome", "email", "telefone", "interesse"],
+    "thankYouMessage": "Obrigado! Entraremos em contato em breve via WhatsApp."
+  },
+  "monitoring": {
+    "alertEmail": "pam.eaglecaps@outlook.com",
+    "timezone": "America/Sao_Paulo",
+    "dashboardRefreshMinutes": 5,
+    "metricsRetentionDays": 90
+  },
+  "agents": {
+    "scheduledTasks": [
+      {"name": "traffic-manager-yahzzi", "schedule": "0 9 * * 1-5"},
+      {"name": "daily-monitor-yahzzi", "schedule": "0 8,13,18 * * *"},
+      {"name": "tiktok-health-yahzzi", "schedule": "0 10 * * 1"}
+    ]
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "name": "ad-traffic-ai-yahzzi-labs",
+  "version": "1.0.0",
+  "description": "Ad Traffic AI - Sistema de Agentes Automatizados - Yahzzi Labs",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "traffic": "node traffic-manager-agent.js",
+    "monitor": "node monitor-agent.js",
+    "email": "node email-agent.js",
+    "agent": "node agent.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.27.0",
+    "axios": "^1.7.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.0",
+    "express": "^4.18.0",
+    "node-cron": "^3.0.3",
+    "puppeteer": "^24.41.0",
+    "stripe": "^16.0.0",
+    "winston": "^3.13.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

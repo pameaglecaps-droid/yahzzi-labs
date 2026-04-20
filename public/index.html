@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Yahzzi Labs — Painel de Leads</title>
+  <style>
+    :root {
+      --bg: #0c0e16;
+      --surface: #13151f;
+      --card: #1b1e2e;
+      --border: #252839;
+      --accent: #7c6ff7;
+      --accent-soft: rgba(124,111,247,.12);
+      --green: #22c55e;
+      --green-soft: rgba(34,197,94,.12);
+      --yellow: #f59e0b;
+      --yellow-soft: rgba(245,158,11,.12);
+      --red: #f43f5e;
+      --red-soft: rgba(244,63,94,.12);
+      --whats: #25d366;
+      --text: #e4e8f1;
+      --muted: #7880a0;
+      --muted2: #4a5068;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+
+    /* HEADER */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 28px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 10;
+    }
+    .logo { display: flex; align-items: center; gap: 10px; }
+    .logo-mark { width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg,#7c6ff7,#06b6d4); display: flex; align-items: center; justify-content: center; font-size: 16px; }
+    .logo-name { font-size: 16px; font-weight: 700; letter-spacing: -.3px; }
+    .logo-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
+    .header-right { display: flex; align-items: center; gap: 16px; }
+    .live-badge { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--green); background: var(--green-soft); padding: 5px 12px; border-radius: 20px; }
+    .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: blink 2s infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+    .refresh-btn { background: none; border: 1px solid var(--border); color: var(--muted); padding: 6px 14px; border-radius: 8px; cursor: pointer; font-size: 12px; transition: all .2s; }
+    .refresh-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* LAYOUT */
+    .page { max-width: 1280px; margin: 0 auto; padding: 28px 24px; }
+    .section-title { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+    .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    /* HERO — leads + CPL */
+    .hero { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 28px; }
+    .hero-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      position: relative; overflow: hidden;
+    }
+    .hero-card.primary { border-color: rgba(124,111,247,.3); background: linear-gradient(135deg, rgba(124,111,247,.08), var(--card)); }
+    .hero-card.whatsapp { border-color: rgba(37,211,102,.3); background: linear-gradient(135deg, rgba(37,211,102,.06), var(--card)); }
+    .hero-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+    .hero-value { font-size: 52px; font-weight: 800; line-height: 1; letter-spacing: -2px; }
+    .hero-value.purple { color: var(--accent); }
+    .hero-value.green { color: var(--green); }
+    .hero-value.yellow { color: var(--yellow); }
+    .hero-value.red { color: var(--red); }
+    .hero-meta { font-size: 13px; color: var(--muted); margin-top: 10px; }
+    .hero-target { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; margin-top: 12px; padding: 4px 12px; border-radius: 20px; }
+    .target-ok { background: var(--green-soft); color: var(--green); }
+    .target-warn { background: var(--yellow-soft); color: var(--yellow); }
+    .target-bad { background: var(--red-soft); color: var(--red); }
+    .hero-bg-icon { position: absolute; right: 20px; bottom: 10px; font-size: 72px; opacity: .05; }
+
+    /* FUNIL */
+    .funnel { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 28px; }
+    .funnel-step {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+      text-align: center;
+      position: relative;
+    }
+    .funnel-step::after {
+      content: '›';
+      position: absolute; right: -10px; top: 50%; transform: translateY(-50%);
+      font-size: 22px; color: var(--muted2); z-index: 1;
+    }
+    .funnel-step:last-child::after { display: none; }
+    .funnel-icon { font-size: 22px; margin-bottom: 6px; }
+    .funnel-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 6px; }
+    .funnel-num { font-size: 26px; font-weight: 700; }
+    .funnel-rate { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+    /* HEALTH CARDS */
+    .health-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 28px; }
+    .health-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; }
+    .health-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 6px; }
+    .health-value { font-size: 22px; font-weight: 700; }
+    .health-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+    .pill { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+    .pill-green { background: var(--green-soft); color: var(--green); }
+    .pill-yellow { background: var(--yellow-soft); color: var(--yellow); }
+    .pill-red { background: var(--red-soft); color: var(--red); }
+    .pill-muted { background: rgba(120,128,160,.1); color: var(--muted); }
+
+    /* TABLES */
+    .table-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 20px; }
+    .table-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; padding: 8px 12px; color: var(--muted); font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: .7px; border-bottom: 1px solid var(--border); }
+    td { padding: 11px 12px; border-bottom: 1px solid rgba(37,40,57,.7); }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(124,111,247,.04); }
+    .status-bar { height: 4px; border-radius: 2px; background: var(--border); margin-top: 4px; overflow: hidden; }
+    .status-bar-fill { height: 100%; border-radius: 2px; transition: width .4s; }
+
+    /* AGENTS */
+    .agents-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin-bottom: 28px; }
+    .agent-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .agent-header { display: flex; align-items: flex-start; justify-content: space-between; }
+    .agent-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; background: var(--accent-soft); flex-shrink: 0; }
+    .agent-name { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+    .agent-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+    .agent-schedule { font-size: 11px; color: var(--muted2); }
+    .btn { padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; transition: all .2s; }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-primary:hover { background: #6c5fe6; }
+    .btn-sm { padding: 6px 14px; font-size: 12px; }
+    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-whats { background: var(--whats); color: white; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: 600; }
+
+    /* ALERTS */
+    .alerts-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 20px; }
+    .alerts-wrap h3 { font-size: 14px; font-weight: 600; margin-bottom: 14px; }
+    .alert-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border-radius: 8px; margin-bottom: 8px; font-size: 13px; }
+    .alert-item:last-child { margin-bottom: 0; }
+    .alert-ok { background: var(--green-soft); color: #4ade80; }
+    .alert-warn { background: var(--yellow-soft); color: #fbbf24; }
+    .alert-error { background: var(--red-soft); color: #fb7185; }
+    .alert-icon { flex-shrink: 0; margin-top: 1px; }
+
+    /* FOOTER */
+    footer { text-align: center; padding: 20px 0 10px; color: var(--muted2); font-size: 11px; }
+    footer span { color: var(--muted); }
+
+    /* LOADING */
+    .skeleton { background: linear-gradient(90deg, var(--border) 25%, rgba(37,40,57,.5) 50%, var(--border) 75%); background-size: 400% 100%; animation: shimmer 1.4s infinite; border-radius: 6px; height: 20px; }
+    @keyframes shimmer { 0%{background-position:100% 0} 100%{background-position:-100% 0} }
+
+    @media (max-width: 900px) {
+      .hero { grid-template-columns: 1fr; }
+      .funnel { grid-template-columns: 1fr 1fr; }
+      .health-row { grid-template-columns: 1fr 1fr; }
+      .funnel-step::after { display: none; }
+    }
+    @media (max-width: 500px) {
+      .funnel { grid-template-columns: 1fr 1fr; }
+      .health-row { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-mark">🎯</div>
+    <div>
+      <div class="logo-name">Yahzzi Labs</div>
+      <div class="logo-sub">Painel de Captação de Leads</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="live-badge"><div class="live-dot"></div>Ao vivo</div>
+    <button class="refresh-btn" onclick="loadAll()">↻ Atualizar</button>
+  </div>
+</header>
+
+<div class="page">
+
+  <!-- HERO: Leads + CPL -->
+  <div class="section-title">Resultado de Hoje</div>
+  <div class="hero">
+    <div class="hero-card primary">
+      <div class="hero-label">Leads Captados Hoje</div>
+      <div class="hero-value purple" id="hero-leads">—</div>
+      <div class="hero-meta" id="hero-leads-sub">Aguardando dados...</div>
+      <div id="hero-leads-badge"></div>
+      <div class="hero-bg-icon">👥</div>
+    </div>
+    <div class="hero-card whatsapp">
+      <div class="hero-label">Custo por Lead (CPL)</div>
+      <div class="hero-value" id="hero-cpl">—</div>
+      <div class="hero-meta" id="hero-cpl-sub">Meta: R$8,00 · Máx: R$20,00</div>
+      <div id="hero-cpl-badge"></div>
+      <div class="hero-bg-icon">💰</div>
+    </div>
+  </div>
+
+  <!-- FUNIL -->
+  <div class="section-title">Funil do Dia</div>
+  <div class="funnel">
+    <div class="funnel-step">
+      <div class="funnel-icon">👁️</div>
+      <div class="funnel-label">Alcance</div>
+      <div class="funnel-num" id="f-impressions">—</div>
+      <div class="funnel-rate">impressões</div>
+    </div>
+    <div class="funnel-step">
+      <div class="funnel-icon">🖱️</div>
+      <div class="funnel-label">Cliques</div>
+      <div class="funnel-num" id="f-clicks">—</div>
+      <div class="funnel-rate" id="f-ctr">CTR —%</div>
+    </div>
+    <div class="funnel-step">
+      <div class="funnel-icon">📋</div>
+      <div class="funnel-label">Formulários</div>
+      <div class="funnel-num" id="f-leads">—</div>
+      <div class="funnel-rate" id="f-conv">conv. —%</div>
+    </div>
+    <div class="funnel-step">
+      <div class="funnel-icon">💬</div>
+      <div class="funnel-label">WhatsApp</div>
+      <div class="funnel-num" id="f-whats">—</div>
+      <div class="funnel-rate">encaminhados</div>
+    </div>
+  </div>
+
+  <!-- HEALTH -->
+  <div class="section-title">Saúde das Campanhas</div>
+  <div class="health-row">
+    <div class="health-card">
+      <div class="health-label">Gasto Hoje</div>
+      <div class="health-value" id="h-spend">—</div>
+      <div class="health-sub" id="h-budget-bar-wrap">
+        <div class="status-bar"><div class="status-bar-fill" id="h-budget-bar" style="width:0%;background:var(--green)"></div></div>
+        <span id="h-budget-pct">—% do orçamento</span>
+      </div>
+    </div>
+    <div class="health-card">
+      <div class="health-label">CPC (Custo / Clique)</div>
+      <div class="health-value" id="h-cpc">—</div>
+      <div class="health-sub">por clique no anúncio</div>
+    </div>
+    <div class="health-card">
+      <div class="health-label">CPM (Custo / 1000)</div>
+      <div class="health-value" id="h-cpm">—</div>
+      <div class="health-sub">custo por mil impressões</div>
+    </div>
+    <div class="health-card">
+      <div class="health-label">Frequência</div>
+      <div class="health-value" id="h-frequency">—</div>
+      <div class="health-sub" id="h-freq-status">vezes / usuário</div>
+    </div>
+  </div>
+
+  <!-- CAMPANHAS -->
+  <div class="table-card">
+    <h3>📢 Campanhas Ativas no Instagram</h3>
+    <div id="campaigns-table">
+      <div class="skeleton" style="margin-bottom:10px"></div>
+      <div class="skeleton" style="width:70%"></div>
+    </div>
+  </div>
+
+  <!-- ADSETS CPL -->
+  <div class="table-card">
+    <h3>🎯 Conjuntos de Anúncios — CPL dos últimos 7 dias</h3>
+    <div id="adsets-table">
+      <div class="skeleton" style="margin-bottom:10px"></div>
+      <div class="skeleton" style="width:80%"></div>
+    </div>
+  </div>
+
+  <!-- AGENTES -->
+  <div class="section-title">Automações com IA</div>
+  <div class="agents-grid">
+    <div class="agent-card">
+      <div class="agent-header">
+        <div class="agent-icon">🤖</div>
+        <span class="pill pill-green">Ativo</span>
+      </div>
+      <div>
+        <div class="agent-name">Otimizador de Leads</div>
+        <div class="agent-desc">Analisa CPL por conjunto de anúncios, pausa os que gastam demais sem gerar leads e sugere melhorias.</div>
+      </div>
+      <div class="agent-schedule">⏰ Segunda a sexta às 9h</div>
+      <button class="btn btn-primary btn-sm" onclick="runAgent('traffic-manager', this)">▶ Executar Agora</button>
+    </div>
+
+    <div class="agent-card">
+      <div class="agent-header">
+        <div class="agent-icon">📊</div>
+        <span class="pill pill-green">Ativo</span>
+      </div>
+      <div>
+        <div class="agent-name">Monitor de Performance</div>
+        <div class="agent-desc">Coleta métricas a cada turno do dia e envia alertas se o CPL subir, o orçamento estourar ou os leads zerarem.</div>
+      </div>
+      <div class="agent-schedule">⏰ 8h, 13h e 18h</div>
+      <button class="btn btn-primary btn-sm" onclick="runAgent('monitor', this)">▶ Executar Agora</button>
+    </div>
+
+    <div class="agent-card">
+      <div class="agent-header">
+        <div class="agent-icon">✍️</div>
+        <span class="pill pill-muted">Manual</span>
+      </div>
+      <div>
+        <div class="agent-name">Gerador de Criativos</div>
+        <div class="agent-desc">Pega os anúncios com melhor CPL e cria 5 variações de copy (título, texto e CTA) prontas para testar.</div>
+      </div>
+      <div class="agent-schedule">Sob demanda</div>
+      <button class="btn btn-primary btn-sm" onclick="runAgent('creative', this)">✨ Gerar Criativos</button>
+    </div>
+
+    <div class="agent-card">
+      <div class="agent-header">
+        <div class="agent-icon">💬</div>
+        <span class="pill pill-green">Pronto</span>
+      </div>
+      <div>
+        <div class="agent-name">Acesso Rápido — WhatsApp</div>
+        <div class="agent-desc">Abra o WhatsApp para atender os leads captados hoje diretamente.</div>
+      </div>
+      <div class="agent-schedule">Número: +55 (11) 99358-1819</div>
+      <a href="https://wa.me/5511993581819" target="_blank" class="btn-whats">💬 Abrir WhatsApp</a>
+    </div>
+  </div>
+
+  <!-- ALERTAS -->
+  <div class="alerts-wrap">
+    <h3>🔔 Alertas do Sistema</h3>
+    <div id="alerts-list">
+      <div class="alert-item alert-ok"><span class="alert-icon">✓</span> Carregando status do sistema...</div>
+    </div>
+  </div>
+
+  <footer>
+    <span id="last-update">—</span> &nbsp;·&nbsp; Yahzzi Labs Ad Traffic AI v1.0 &nbsp;·&nbsp; Lead Gen → Instagram → WhatsApp
+  </footer>
+
+</div>
+
+<script>
+  const TARGET_CPL = 8;
+  const MAX_DAILY_BUDGET = 30;
+
+  async function api(url) {
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(r.statusText);
+    return r.json();
+  }
+
+  function brl(val) {
+    return 'R$' + parseFloat(val || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function num(val) {
+    return parseInt(val || 0).toLocaleString('pt-BR');
+  }
+
+  function cplBadge(cpl) {
+    const c = parseFloat(cpl || 0);
+    if (c === 0) return { cls: 'target-warn', icon: '—', label: 'sem dados ainda' };
+    if (c <= TARGET_CPL) return { cls: 'target-ok', icon: '✓', label: `R$${c.toFixed(2)} abaixo da meta` };
+    if (c <= TARGET_CPL * 1.5) return { cls: 'target-warn', icon: '⚠', label: `R$${c.toFixed(2)} acima da meta` };
+    return { cls: 'target-bad', icon: '✗', label: `R$${c.toFixed(2)} — muito alto` };
+  }
+
+  function cplColor(cpl) {
+    const c = parseFloat(cpl || 0);
+    if (c === 0) return 'var(--muted)';
+    if (c <= TARGET_CPL) return 'var(--green)';
+    if (c <= TARGET_CPL * 1.5) return 'var(--yellow)';
+    return 'var(--red)';
+  }
+
+  function cplHeroClass(cpl) {
+    const c = parseFloat(cpl || 0);
+    if (c === 0) return '';
+    if (c <= TARGET_CPL) return 'green';
+    if (c <= TARGET_CPL * 1.5) return 'yellow';
+    return 'red';
+  }
+
+  const LEAD_TYPES = ['lead','onsite_conversion.lead_grouped','contact_total','messaging_conversation_started_7d','click_to_call_call_confirm'];
+
+  function countLeads(actions) {
+    return LEAD_TYPES.reduce((s, t) => {
+      const a = (actions || []).find(x => x.action_type === t);
+      return s + parseFloat(a?.value || 0);
+    }, 0);
+  }
+
+  async function loadSummary() {
+    try {
+      const d = await api('/api/dashboard/summary');
+      const meta = d.meta || {};
+      const leads = parseInt(meta.leads || 0);
+      const spend = parseFloat(meta.spend || 0);
+      const cpl = leads > 0 ? spend / leads : 0;
+      const clicks = parseInt(meta.clicks || 0);
+      const impressions = parseInt(meta.impressions || 0);
+      const ctr = parseFloat(meta.ctr || 0);
+      const convRate = clicks > 0 ? ((leads / clicks) * 100).toFixed(1) : '0';
+      const budgetPct = Math.min((spend / MAX_DAILY_BUDGET) * 100, 100);
+      const freq = parseFloat(meta.frequency || 0);
+
+      // Hero
+      document.getElementById('hero-leads').textContent = leads;
+      document.getElementById('hero-leads-sub').textContent = leads === 0
+        ? 'Nenhum lead ainda hoje'
+        : leads === 1 ? '1 pessoa entrou em contato' : `${leads} pessoas entraram em contato`;
+
+      document.getElementById('hero-cpl').textContent = cpl > 0 ? brl(cpl) : '—';
+      document.getElementById('hero-cpl').className = `hero-value ${cplHeroClass(cpl)}`;
+
+      const badge = cplBadge(cpl);
+      document.getElementById('hero-cpl-badge').innerHTML = `<span class="hero-target ${badge.cls}">${badge.icon} ${badge.label}</span>`;
+      document.getElementById('hero-leads-badge').innerHTML = leads > 0
+        ? `<span class="hero-target target-ok">✓ ${leads} lead${leads > 1 ? 's' : ''} captado${leads > 1 ? 's' : ''}</span>`
+        : `<span class="hero-target target-warn">⏳ Aguardando primeiros leads</span>`;
+
+      // Funil
+      document.getElementById('f-impressions').textContent = num(impressions);
+      document.getElementById('f-clicks').textContent = num(clicks);
+      document.getElementById('f-ctr').textContent = `CTR ${ctr.toFixed(2)}%`;
+      document.getElementById('f-leads').textContent = leads;
+      document.getElementById('f-conv').textContent = `conv. ${convRate}%`;
+      document.getElementById('f-whats').textContent = leads;
+
+      // Health
+      document.getElementById('h-spend').textContent = brl(spend);
+      document.getElementById('h-cpc').textContent = parseFloat(meta.cpc || 0) > 0 ? brl(meta.cpc) : '—';
+      document.getElementById('h-cpm').textContent = parseFloat(meta.cpm || 0) > 0 ? brl(meta.cpm) : '—';
+
+      const barColor = budgetPct > 90 ? 'var(--red)' : budgetPct > 70 ? 'var(--yellow)' : 'var(--green)';
+      document.getElementById('h-budget-bar').style.width = `${budgetPct}%`;
+      document.getElementById('h-budget-bar').style.background = barColor;
+      document.getElementById('h-budget-pct').textContent = `${budgetPct.toFixed(0)}% do orçamento diário`;
+
+      document.getElementById('h-frequency').textContent = freq > 0 ? freq.toFixed(1) : '—';
+      document.getElementById('h-freq-status').innerHTML = freq > 3.5
+        ? `<span style="color:var(--red)">⚠ audiência com fadiga</span>`
+        : freq > 0 ? 'vezes por usuário (ok)' : 'vezes / usuário';
+
+      // Alerts
+      const errors = d.errors || [];
+      const alerts = [];
+      if (cpl > TARGET_CPL * 2) alerts.push({ type: 'error', msg: `CPL muito alto: ${brl(cpl)} — meta é ${brl(TARGET_CPL)}` });
+      else if (cpl > TARGET_CPL) alerts.push({ type: 'warn', msg: `CPL acima da meta: ${brl(cpl)} (meta: ${brl(TARGET_CPL)})` });
+      if (budgetPct > 90) alerts.push({ type: 'warn', msg: `${budgetPct.toFixed(0)}% do orçamento diário já utilizado` });
+      if (freq > 3.5) alerts.push({ type: 'warn', msg: `Frequência alta (${freq.toFixed(1)}) — considere renovar os criativos` });
+      if (leads === 0 && spend > 8) alerts.push({ type: 'warn', msg: `Gasto de ${brl(spend)} sem leads hoje — verifique o formulário e criativos` });
+      errors.forEach(e => alerts.push({ type: 'warn', msg: e }));
+
+      const alertsEl = document.getElementById('alerts-list');
+      if (alerts.length === 0) {
+        alertsEl.innerHTML = `<div class="alert-item alert-ok"><span class="alert-icon">✓</span> Tudo certo — sistema operando normalmente</div>`;
+      } else {
+        alertsEl.innerHTML = alerts.map(a => `
+          <div class="alert-item alert-${a.type === 'error' ? 'error' : 'warn'}">
+            <span class="alert-icon">${a.type === 'error' ? '✗' : '⚠'}</span>
+            ${a.msg}
+          </div>`).join('');
+      }
+
+      document.getElementById('last-update').textContent = `Última atualização: ${new Date().toLocaleTimeString('pt-BR')}`;
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  async function loadCampaigns() {
+    try {
+      const d = await api('/api/meta/campaigns');
+      const campaigns = (d.data || []).filter(c => c.status === 'ACTIVE' || c.status === 'PAUSED');
+      const el = document.getElementById('campaigns-table');
+      if (campaigns.length === 0) {
+        el.innerHTML = `<p style="color:var(--muted);font-size:13px;padding:12px 0">Nenhuma campanha encontrada. Crie sua primeira campanha abaixo.</p>`;
+        return;
+      }
+      el.innerHTML = `<table>
+        <thead><tr><th>Campanha</th><th>Status</th><th>Objetivo</th><th>Budget/dia</th><th>Ação</th></tr></thead>
+        <tbody>${campaigns.map(c => `
+          <tr>
+            <td><b>${c.name}</b></td>
+            <td><span class="pill ${c.status === 'ACTIVE' ? 'pill-green' : 'pill-muted'}">${c.status === 'ACTIVE' ? '● Ativa' : '○ Pausada'}</span></td>
+            <td style="color:var(--muted);font-size:12px">${c.objective || 'LEAD_GENERATION'}</td>
+            <td>${c.daily_budget ? brl(parseInt(c.daily_budget) / 100) : '—'}</td>
+            <td>${c.status === 'ACTIVE'
+              ? `<button class="btn btn-outline btn-sm" onclick="toggleCampaign('${c.id}','pause')">Pausar</button>`
+              : `<button class="btn btn-primary btn-sm" onclick="toggleCampaign('${c.id}','activate')">Ativar</button>`}
+            </td>
+          </tr>`).join('')}
+        </tbody></table>`;
+    } catch (e) {
+      document.getElementById('campaigns-table').innerHTML = `<p style="color:var(--red);font-size:13px">${e.message}</p>`;
+    }
+  }
+
+  async function loadAdsets() {
+    try {
+      const d = await api('/api/meta/insights?date_preset=last_7d&level=adset');
+      const adsets = d.data || [];
+      const el = document.getElementById('adsets-table');
+      if (adsets.length === 0) {
+        el.innerHTML = `<p style="color:var(--muted);font-size:13px;padding:12px 0">Nenhum dado de conjunto de anúncios ainda.</p>`;
+        return;
+      }
+
+      const rows = adsets.map(a => {
+        const spend = parseFloat(a.spend || 0);
+        const leads = Math.round(countLeads(a.actions));
+        const cpl = leads > 0 ? spend / leads : 0;
+        const ctr = parseFloat(a.ctr || 0);
+        return { name: a.adset_name, campaign: a.campaign_name, spend, leads, cpl, ctr };
+      }).sort((a, b) => {
+        if (!a.cpl && !b.cpl) return b.spend - a.spend;
+        if (!a.cpl) return 1;
+        if (!b.cpl) return -1;
+        return a.cpl - b.cpl;
+      });
+
+      el.innerHTML = `<table>
+        <thead><tr><th>Conjunto de Anúncios</th><th>Leads (7d)</th><th>CPL</th><th>Gasto</th><th>CTR</th><th>Status</th></tr></thead>
+        <tbody>${rows.map(r => {
+          const color = cplColor(r.cpl);
+          const status = r.cpl === 0
+            ? `<span class="pill pill-muted">sem dados</span>`
+            : r.cpl <= TARGET_CPL
+              ? `<span class="pill pill-green">✓ Bom</span>`
+              : r.cpl <= TARGET_CPL * 2
+                ? `<span class="pill pill-yellow">⚠ Alto</span>`
+                : `<span class="pill pill-red">✗ Crítico</span>`;
+          return `<tr>
+            <td>
+              <div style="font-weight:600">${r.name}</div>
+              <div style="font-size:11px;color:var(--muted)">${r.campaign || ''}</div>
+            </td>
+            <td><b style="font-size:16px">${r.leads}</b></td>
+            <td><b style="color:${color}">${r.cpl > 0 ? brl(r.cpl) : '—'}</b></td>
+            <td>${brl(r.spend)}</td>
+            <td style="color:var(--muted)">${r.ctr.toFixed(2)}%</td>
+            <td>${status}</td>
+          </tr>`;
+        }).join('')}
+        </tbody></table>`;
+    } catch (e) {
+      document.getElementById('adsets-table').innerHTML = `<p style="color:var(--muted);font-size:13px;padding:12px 0">Dados de adsets não disponíveis ainda.</p>`;
+    }
+  }
+
+  async function toggleCampaign(id, action) {
+    if (action === 'pause' && !confirm('Pausar esta campanha?')) return;
+    try {
+      await fetch(`/api/meta/campaigns/${id}/${action}`, { method: 'POST' });
+      loadCampaigns();
+    } catch (e) { alert('Erro: ' + e.message); }
+  }
+
+  async function runAgent(name, btn) {
+    const original = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = '⏳ Executando...';
+    try {
+      const r = await fetch(`/api/agents/${name}/run`, { method: 'POST' });
+      const d = await r.json();
+      btn.textContent = '✓ Iniciado!';
+      setTimeout(() => { btn.disabled = false; btn.textContent = original; }, 3000);
+    } catch (e) {
+      btn.textContent = '✗ Erro';
+      setTimeout(() => { btn.disabled = false; btn.textContent = original; }, 2000);
+    }
+  }
+
+  async function loadAll() {
+    await Promise.all([loadSummary(), loadCampaigns(), loadAdsets()]);
+  }
+
+  loadAll();
+  setInterval(loadAll, 5 * 60 * 1000);
+</script>
+</body>
+</html>

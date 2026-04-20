@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<title>Criativo Estático — Yahzzi Labs</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: 1080px;
+    height: 1080px;
+    overflow: hidden;
+    font-family: 'Montserrat', 'Arial Black', sans-serif;
+    background: #060c1a;
+  }
+
+  .ad {
+    width: 1080px;
+    height: 1080px;
+    position: relative;
+    background: linear-gradient(145deg, #060c1a 0%, #0d1b35 40%, #091428 100%);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 52px 58px 48px;
+  }
+
+  /* BG grid lines */
+  .ad::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,120,255,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,120,255,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+  }
+
+  /* Glow blobs */
+  .blob1 {
+    position: absolute;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(0,100,255,0.12) 0%, transparent 70%);
+    top: -100px; right: -80px;
+    pointer-events: none;
+  }
+  .blob2 {
+    position: absolute;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(255,180,0,0.07) 0%, transparent 70%);
+    bottom: 60px; left: -60px;
+    pointer-events: none;
+  }
+
+  /* TOP SECTION */
+  .top { position: relative; z-index: 2; }
+
+  .alert-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,50,50,0.15);
+    border: 1.5px solid rgba(255,80,80,0.4);
+    border-radius: 50px;
+    padding: 8px 20px;
+    margin-bottom: 22px;
+  }
+  .alert-badge span {
+    font-size: 15px;
+    font-weight: 700;
+    color: #ff6060;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+  .alert-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #ff4444;
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .hook {
+    font-size: 72px;
+    font-weight: 900;
+    line-height: 1.0;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: -1px;
+  }
+  .hook .destaque {
+    color: #FFB800;
+  }
+  .hook .vermelho {
+    color: #ff4444;
+  }
+
+  .sub-hook {
+    margin-top: 16px;
+    font-size: 22px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.7);
+    line-height: 1.4;
+    max-width: 620px;
+  }
+
+  /* MIDDLE */
+  .middle {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .divider {
+    width: 80px;
+    height: 4px;
+    background: linear-gradient(90deg, #FFB800, #ff6a00);
+    border-radius: 2px;
+    margin-bottom: 4px;
+  }
+
+  .produtos-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #FFB800;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+  }
+
+  .produtos-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  .produto-item {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .produto-icon {
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  .produto-nome {
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* UNIDADES BADGE */
+  .unidades-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: linear-gradient(135deg, rgba(255,184,0,0.15), rgba(255,106,0,0.1));
+    border: 1.5px solid rgba(255,184,0,0.35);
+    border-radius: 14px;
+    padding: 16px 24px;
+  }
+  .unidades-number {
+    font-size: 52px;
+    font-weight: 900;
+    color: #FFB800;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .unidades-text {
+    display: flex;
+    flex-direction: column;
+  }
+  .unidades-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.6);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+  .unidades-desc {
+    font-size: 18px;
+    font-weight: 800;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* PÚBLICO */
+  .publico-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .publico-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.45);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    flex-shrink: 0;
+  }
+  .publico-tag {
+    font-size: 12px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.8);
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 50px;
+    padding: 5px 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* BOTTOM */
+  .bottom {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+  }
+
+  .brand {
+    display: flex;
+    flex-direction: column;
+  }
+  .brand-name {
+    font-size: 20px;
+    font-weight: 900;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+  }
+  .brand-sub {
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.4);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .cta-btn {
+    background: linear-gradient(135deg, #FFB800, #ff6a00);
+    color: #000;
+    font-size: 18px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    padding: 18px 40px;
+    border-radius: 50px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 0 30px rgba(255,184,0,0.35);
+    white-space: nowrap;
+  }
+  .cta-arrow {
+    font-size: 20px;
+  }
+
+  /* Acento azul lateral */
+  .side-accent {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 6px;
+    background: linear-gradient(180deg, #0050ff, #00c3ff, transparent);
+    z-index: 10;
+  }
+</style>
+</head>
+<body>
+<div class="ad">
+  <div class="side-accent"></div>
+  <div class="blob1"></div>
+  <div class="blob2"></div>
+
+  <!-- TOP -->
+  <div class="top">
+    <div class="alert-badge">
+      <div class="alert-dot"></div>
+      <span>Atenção: Creators • Lojistas • Distribuidores</span>
+    </div>
+
+    <div class="hook">
+      Sem marca<br>
+      própria?<br>
+      <span class="vermelho">Você está</span><br>
+      <span class="destaque">perdendo<br>dinheiro.</span>
+    </div>
+
+    <div class="sub-hook">
+      Quem vende marca dos outros financia o crescimento de outra pessoa.<br>
+      <strong style="color:#fff;">Hora de construir o seu ativo.</strong>
+    </div>
+  </div>
+
+  <!-- MIDDLE -->
+  <div class="middle">
+    <div>
+      <div class="divider"></div>
+      <div class="produtos-title" style="margin-top:10px;">Fabricamos para você</div>
+    </div>
+
+    <div class="produtos-grid">
+      <div class="produto-item">
+        <div class="produto-icon">💊</div>
+        <div class="produto-nome">Cápsulas</div>
+      </div>
+      <div class="produto-item">
+        <div class="produto-icon">🧃</div>
+        <div class="produto-nome">Solúveis</div>
+      </div>
+      <div class="produto-item">
+        <div class="produto-icon">🍬</div>
+        <div class="produto-nome">Gummies</div>
+      </div>
+      <div class="produto-item">
+        <div class="produto-icon">🍫</div>
+        <div class="produto-nome">Chocolates</div>
+      </div>
+      <div class="produto-item">
+        <div class="produto-icon">🍭</div>
+        <div class="produto-nome">Caramelos</div>
+      </div>
+      <div class="produto-item">
+        <div class="produto-icon">✨</div>
+        <div class="produto-nome">Cosméticos</div>
+      </div>
+    </div>
+
+    <div class="unidades-row">
+      <div class="unidades-number">100</div>
+      <div class="unidades-text">
+        <div class="unidades-label">A partir de</div>
+        <div class="unidades-desc">unidades já é possível</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.5);font-weight:600;margin-top:2px;">Fórmula • Embalagem • Branding • Estratégia</div>
+      </div>
+    </div>
+
+    <div class="publico-row">
+      <div class="publico-label">Para:</div>
+      <div class="publico-tag">Creators</div>
+      <div class="publico-tag">Influencers</div>
+      <div class="publico-tag">UGC</div>
+      <div class="publico-tag">Lojistas</div>
+      <div class="publico-tag">Distribuidoras</div>
+      <div class="publico-tag">E-commerce</div>
+      <div class="publico-tag">Digital</div>
+    </div>
+  </div>
+
+  <!-- BOTTOM -->
+  <div class="bottom">
+    <div class="brand">
+      <div class="brand-name">Yahzzi Labs</div>
+      <div class="brand-sub">Marca Própria · Suplementos · Cosméticos</div>
+    </div>
+    <div class="cta-btn">
+      Criar minha marca
+      <span class="cta-arrow">→</span>
+    </div>
+  </div>
+</div>
+</body>
+</html>
