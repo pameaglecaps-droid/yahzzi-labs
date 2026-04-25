@@ -588,4 +588,86 @@ app.listen(PORT, () => {
   logger.info(`Dashboard: http://localhost:${PORT}`);
 });
 
+// ─── RELATÓRIOS AUTOMÁTICOS 2x AO DIA ────────────────────────────────────────
+const cron = require('node-cron');
+const nodemailer = require('nodemailer');
+
+const ALERT_EMAIL = process.env.ALERT_EMAIL || 'pam.eaglecaps@gmail.com';
+const SMTP_USER   = process.env.SMTP_USER;
+const SMTP_PASS   = process.env.SMTP_PASS;
+
+async function gerarRelatorio(turno) {
+  try {
+    const { META_ACCESS_TOKEN, META_AD_ACCOUNT_ID, META_API_VERSION = 'v20.0' } = process.env;
+    const BASE = `https://graph.facebook.com/${META_API_VERSION}`;
+    const today = new Date().toISOString().split('T')[0];
+
+    // Campanhas ativas
+    const camps = await axios.get(`${BASE}/${META_AD_ACCOUNT_ID}/campaigns`, {
+      params: { fields: 'id,name,status,objective', limit: 10, access_token: META_ACCESS_TOKEN }
+    });
+    const ativas = camps.data.data.filter(c => c.status === 'ACTIVE');
+
+    // Insights do dia
+    const insights = await axios.get(`${BASE}/${META_AD_ACCOUNT_ID}/insights`, {
+      params: {
+        fields: 'spend,impressions,clicks,ctr,cpc,actions',
+        time_range: JSON.stringify({ since: today, until: today }),
+        access_token: META_ACCESS_TOKEN,
+      }
+    });
+    const d = insights.data.data[0] || {};
+    const leads = (d.actions || []).find(a => a.action_type === 'lead')?.value || 0;
+    const mensagens = (d.actions || []).find(a => a.action_type === 'onsite_conversion.messaging_conversation_started_7d')?.value || 0;
+
+    const corpo = `
+RELATÓRIO YAHZZI LABS — ${turno.toUpperCase()} | ${today}
+${'─'.repeat(50)}
+
+INVESTIMENTO HOJE : R$${parseFloat(d.spend || 0).toFixed(2)}
+IMPRESSÕES        : ${parseInt(d.impressions || 0).toLocaleString('pt-BR')}
+CLIQUES           : ${d.clicks || 0}
+CTR               : ${parseFloat(d.ctr || 0).toFixed(2)}%
+CPC               : R$${parseFloat(d.cpc || 0).toFixed(2)}
+LEADS             : ${leads}
+CONVERSAS WHATS   : ${mensagens}
+
+CAMPANHAS ATIVAS  : ${ativas.length}
+${ativas.map(c => `  • ${c.name}`).join('\n')}
+
+${'─'.repeat(50)}
+Yahzzi Labs — Ad Traffic AI
+    `.trim();
+
+    logger.info(`[CRON] Relatório ${turno} gerado`);
+
+    if (SMTP_USER && SMTP_PASS) {
+      const transporter = nodemailer.createTransport({
+        host: 'smtp.gmail.com',
+        port: 587,
+        secure: false,
+        auth: { user: SMTP_USER, pass: SMTP_PASS },
+      });
+      await transporter.sendMail({
+        from: `"Yahzzi Labs AI" <${SMTP_USER}>`,
+        to: ALERT_EMAIL,
+        subject: `📊 Relatório ${turno} — Yahzzi Labs | ${today}`,
+        text: corpo,
+      });
+      logger.info(`[CRON] Email enviado para ${ALERT_EMAIL}`);
+    } else {
+      // Sem SMTP: salva no log
+      logger.info(`[CRON] RELATÓRIO:\n${corpo}`);
+    }
+  } catch (err) {
+    logger.error(`[CRON] Erro ao gerar relatório ${turno}: ${err.message}`);
+  }
+}
+
+// 8h BRT = 11h UTC | 18h BRT = 21h UTC
+cron.schedule('0 11 * * *', () => gerarRelatorio('manhã'),  { timezone: 'America/Sao_Paulo' });
+cron.schedule('0 21 * * *', () => gerarRelatorio('tarde'),  { timezone: 'America/Sao_Paulo' });
+
+logger.info('[CRON] Relatórios automáticos agendados: 8h e 18h (horário de Brasília)');
+
 module.exports = app;
