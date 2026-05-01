@@ -386,6 +386,73 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), (req,
 });
 
 // ─────────────────────────────────────────
+// GOOGLE STITCH
+// ─────────────────────────────────────────
+app.get('/api/stitch/status', (req, res) => {
+  const config = getConfig();
+  const stitchConfig = config.google?.stitch || {};
+  res.json({
+    enabled: stitchConfig.enabled || false,
+    projectId: stitchConfig.projectId || null,
+    hasApiKey: !!process.env.STITCH_API_KEY,
+    screensDir: '/stitch-screens'
+  });
+});
+
+app.get('/api/stitch/screens', (req, res) => {
+  try {
+    const screensDir = require('path').join(__dirname, 'public', 'stitch-screens');
+    if (!require('fs').existsSync(screensDir)) return res.json({ screens: [] });
+    const files = require('fs').readdirSync(screensDir)
+      .filter(f => f.endsWith('.html'))
+      .map(f => ({
+        filename: f,
+        url: `/stitch-screens/${f}`,
+        createdAt: require('fs').statSync(require('path').join(screensDir, f)).mtime
+      }))
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    res.json({ screens: files });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/stitch/generate', async (req, res) => {
+  try {
+    const config = getConfig();
+    if (!config.google?.stitch?.enabled) {
+      return res.status(400).json({ error: 'Google Stitch está desabilitado. Ative em config.json (google.stitch.enabled: true).' });
+    }
+    if (!process.env.STITCH_API_KEY) {
+      return res.status(400).json({ error: 'STITCH_API_KEY não configurada nas variáveis de ambiente.' });
+    }
+    const { type = 'lead', campaignName, target } = req.body;
+    const args = ['stitch-agent.js', type];
+    if (campaignName) args.push(campaignName);
+    if (target) args.push(target);
+    const { spawn } = require('child_process');
+    const proc = spawn('node', args, { detached: true, stdio: 'ignore' });
+    proc.unref();
+    logger.info(`Stitch agent triggered: type=${type}`);
+    res.json({ ok: true, message: `Stitch agent iniciado (tipo: ${type}). Verifique /api/stitch/screens em alguns instantes.` });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/agents/stitch/run', async (req, res) => {
+  try {
+    const { spawn } = require('child_process');
+    const proc = spawn('node', ['stitch-agent.js'], { detached: true, stdio: 'ignore' });
+    proc.unref();
+    logger.info('Stitch agent triggered manually');
+    res.json({ ok: true, message: 'Stitch agent iniciado. Verifique os logs.' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─────────────────────────────────────────
 // DASHBOARD METRICS (consolidated)
 // ─────────────────────────────────────────
 app.get('/api/dashboard/summary', async (req, res) => {

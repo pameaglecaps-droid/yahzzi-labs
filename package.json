@@ -9,7 +9,12 @@
     "traffic": "node traffic-manager-agent.js",
     "monitor": "node monitor-agent.js",
     "email": "node email-agent.js",
-    "agent": "node agent.js"
+    "agent": "node agent.js",
+    "stitch": "node stitch-agent.js",
+    "stitch:init": "npx @_davideast/stitch-mcp init",
+    "stitch:lead": "node stitch-agent.js lead",
+    "stitch:dashboard": "node stitch-agent.js dashboard",
+    "stitch:export": "node stitch-agent.js export"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.27.0",

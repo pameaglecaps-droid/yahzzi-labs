@@ -27,6 +27,18 @@
   "stripe": {
     "enabled": false
   },
+  "google": {
+    "stitch": {
+      "enabled": false,
+      "projectId": "",
+      "defaultDevice": "mobile",
+      "screens": {
+        "leadPage": true,
+        "dashboard": true,
+        "creative": true
+      }
+    }
+  },
   "safety": {
     "targetCPL": 8,
     "maxCPL": 20,
