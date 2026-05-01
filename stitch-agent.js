@@ -1,7 +1,7 @@
 require('dotenv').config();
 const Anthropic = require('@anthropic-ai/sdk');
 const axios = require('axios');
-const { execSync, spawn } = require('child_process');
+const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
@@ -19,7 +19,7 @@ function getConfig() {
   return JSON.parse(fs.readFileSync(path.join(__dirname, 'config.json'), 'utf8'));
 }
 
-// ─── META INSIGHTS (contexto para os prompts) ─────────────────────────────────
+// ─── META INSIGHTS ────────────────────────────────────────────────────────────
 
 async function getMetaInsights() {
   const { META_ACCESS_TOKEN, META_AD_ACCOUNT_ID, META_API_VERSION = 'v20.0' } = process.env;
@@ -46,13 +46,12 @@ async function getMetaInsights() {
 
 async function buildStitchPrompt(screenType, context = {}) {
   const config = getConfig();
-
   const msg = await anthropic.messages.create({
     model: 'claude-sonnet-4-6',
     max_tokens: 512,
     system: `Você é um designer de UI especializado em landing pages de alta conversão para marketing digital.
 Crie prompts detalhados para o Google Stitch gerar telas bonitas e funcionais.
-Responda APENAS com o prompt em inglês para o Stitch, sem explicações adicionais. Máximo 4 frases.`,
+Responda APENAS com o prompt em inglês para o Stitch, sem explicações. Máximo 4 frases.`,
     messages: [{
       role: 'user',
       content: `Crie um prompt para o Google Stitch gerar: ${screenType}
@@ -60,45 +59,38 @@ Marca: ${config.brand.displayName}
 Contexto: ${JSON.stringify(context)}`
     }]
   });
-
   return msg.content[0].text.trim();
 }
 
-// ─── STITCH MCP: executar comandos via CLI ────────────────────────────────────
+// ─── STITCH MCP CLI ───────────────────────────────────────────────────────────
 
-function runStitchCli(args, opts = {}) {
+function stitch(args, extraEnv = {}) {
   const cmd = `npx @_davideast/stitch-mcp ${args.join(' ')}`;
-  log(`Executando: ${cmd}`);
-  try {
-    const output = execSync(cmd, {
-      env: { ...process.env },
-      timeout: 120000,
-      encoding: 'utf8',
-      ...opts
-    });
-    return output.trim();
-  } catch (err) {
-    throw new Error(`Stitch CLI erro: ${err.stderr || err.message}`);
-  }
+  log(`Stitch: ${cmd}`);
+  return execSync(cmd, {
+    env: { ...process.env, ...extraEnv },
+    timeout: 120000,
+    encoding: 'utf8'
+  }).trim();
 }
 
-// Gera tela e retorna HTML via MCP build_site
-function buildSiteFromProject(projectId, outputDir) {
-  const screensDir = path.join(__dirname, 'public', outputDir || 'stitch-screens');
-  if (!fs.existsSync(screensDir)) fs.mkdirSync(screensDir, { recursive: true });
-
-  // Usa o comando `site` para exportar todas as telas do projeto
-  log(`Exportando telas do projeto: ${projectId}`);
-  runStitchCli(['site', '-p', projectId, '--output', screensDir]);
-  return screensDir;
+// Chama uma MCP tool diretamente via CLI
+function stitchTool(toolName, data, extraEnv = {}) {
+  const jsonData = JSON.stringify(data);
+  const cmd = `npx @_davideast/stitch-mcp tool ${toolName} -d '${jsonData}' -o json`;
+  log(`Stitch tool: ${toolName} ${JSON.stringify(data)}`);
+  return JSON.parse(execSync(cmd, {
+    env: { ...process.env, ...extraEnv },
+    timeout: 120000,
+    encoding: 'utf8'
+  }).trim());
 }
 
-// ─── GERAR TELAS ESPECÍFICAS ──────────────────────────────────────────────────
+// ─── SCREENS ──────────────────────────────────────────────────────────────────
 
 async function generateLeadPage(projectId) {
   const config = getConfig();
   const insights = await getMetaInsights();
-
   const context = {
     brand: config.brand.displayName,
     whatsapp: config.whatsapp.number,
@@ -111,27 +103,25 @@ async function generateLeadPage(projectId) {
   const prompt = await buildStitchPrompt('Lead capture landing page for WhatsApp conversion', context);
   log(`Prompt: ${prompt}`);
 
-  // Usa o MCP serve para gerar a tela interativamente
+  log('Chamando Stitch MCP tool: snapshot...');
+  const result = stitchTool('snapshot', { projectId, prompt, deviceType: 'mobile' });
+
   const outputDir = path.join(__dirname, 'public', 'stitch-screens');
   if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
 
-  log('Solicitando tela ao Stitch via MCP...');
-  const result = runStitchCli(['serve', '-p', projectId, '--prompt', prompt, '--format', 'json']);
-
-  let screenData = {};
-  try {
-    screenData = JSON.parse(result);
-  } catch {
-    screenData = { raw: result };
+  if (result.html) {
+    const slug = `lead-page-${Date.now()}.html`;
+    fs.writeFileSync(path.join(outputDir, slug), result.html);
+    log(`Lead page salva: public/stitch-screens/${slug}`);
+    return { type: 'lead-page', prompt, slug, localPath: `/stitch-screens/${slug}`, imageUrl: result.imageUrl };
   }
 
-  return { type: 'lead-page', prompt, projectId, screenData };
+  return { type: 'lead-page', prompt, result };
 }
 
 async function generateDashboardScreen(projectId) {
   const config = getConfig();
   const insights = await getMetaInsights();
-
   const context = {
     brand: config.brand.displayName,
     metrics: {
@@ -147,33 +137,47 @@ async function generateDashboardScreen(projectId) {
   const prompt = await buildStitchPrompt('Ad performance dashboard with metrics cards and charts', context);
   log(`Prompt: ${prompt}`);
 
-  log('Solicitando tela ao Stitch via MCP...');
-  const result = runStitchCli(['serve', '-p', projectId, '--prompt', prompt, '--format', 'json']);
+  log('Chamando Stitch MCP tool: snapshot...');
+  const result = stitchTool('snapshot', { projectId, prompt, deviceType: 'desktop' });
 
-  let screenData = {};
-  try {
-    screenData = JSON.parse(result);
-  } catch {
-    screenData = { raw: result };
+  const outputDir = path.join(__dirname, 'public', 'stitch-screens');
+  if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
+
+  if (result.html) {
+    const slug = `dashboard-${Date.now()}.html`;
+    fs.writeFileSync(path.join(outputDir, slug), result.html);
+    log(`Dashboard salvo: public/stitch-screens/${slug}`);
+    return { type: 'dashboard', prompt, slug, localPath: `/stitch-screens/${slug}`, imageUrl: result.imageUrl };
   }
 
-  return { type: 'dashboard', prompt, projectId, screenData };
+  return { type: 'dashboard', prompt, result };
 }
 
-// Exporta TODAS as telas de um projeto Stitch para a pasta public/stitch-screens
+// Exporta todas as telas do projeto para public/stitch-screens
 async function exportProject(projectId) {
-  log(`Exportando projeto completo: ${projectId}`);
-  const outputDir = buildSiteFromProject(projectId);
+  log(`Exportando projeto: ${projectId}`);
+  const outputDir = path.join(__dirname, 'public', 'stitch-screens');
+  if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
+
+  stitch(['site', '-p', projectId, '--output', outputDir]);
+
   const files = fs.readdirSync(outputDir).filter(f => f.endsWith('.html'));
-  log(`${files.length} tela(s) exportada(s) para ${outputDir}`);
+  log(`${files.length} tela(s) exportada(s)`);
   return { type: 'export', projectId, outputDir, files };
+}
+
+// Lista screens disponíveis no projeto
+async function listScreens(projectId) {
+  log(`Listando screens do projeto: ${projectId}`);
+  const output = stitch(['screens', '-p', projectId, '--json']);
+  const screens = JSON.parse(output);
+  return { type: 'list', projectId, screens };
 }
 
 // ─── SALVAR RESULTADOS ────────────────────────────────────────────────────────
 
 function saveResults(results) {
-  const logsDir = path.join(__dirname, 'logs');
-  const file = path.join(logsDir, `stitch-results-${new Date().toISOString().split('T')[0]}.json`);
+  const file = path.join(__dirname, 'logs', `stitch-results-${new Date().toISOString().split('T')[0]}.json`);
   const existing = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : [];
   existing.push({ timestamp: new Date().toISOString(), ...results });
   fs.writeFileSync(file, JSON.stringify(existing, null, 2));
@@ -186,40 +190,40 @@ async function run() {
   const config = getConfig();
   const stitchConfig = config.google?.stitch;
 
+  if (!process.env.STITCH_API_KEY) {
+    log('AVISO: STITCH_API_KEY não encontrada no .env');
+    log('Obtenha sua API key em: https://stitch.withgoogle.com → Settings → API Keys');
+    log('Adicione ao .env: STITCH_API_KEY=sua-chave-aqui');
+  }
+
   if (!stitchConfig?.enabled) {
-    log('Google Stitch está desabilitado. Configure:');
-    log('  1. Rode: npx @_davideast/stitch-mcp init');
-    log('  2. Defina STITCH_PROJECT_ID no .env');
-    log('  3. Ative: google.stitch.enabled: true no config.json');
+    log('Google Stitch desabilitado em config.json. Para ativar:');
+    log('  1. Adicione STITCH_API_KEY e STITCH_PROJECT_ID ao .env');
+    log('  2. Ative: "google": { "stitch": { "enabled": true, "projectId": "..." } }');
     process.exit(0);
   }
 
   const projectId = process.env.STITCH_PROJECT_ID || stitchConfig.projectId;
   if (!projectId) {
-    log('ERRO: STITCH_PROJECT_ID não configurado.');
+    log('ERRO: STITCH_PROJECT_ID não configurado. Adicione ao .env ou config.json.');
     process.exit(1);
   }
 
   const mode = process.argv[2] || 'export';
-  log(`=== STITCH AGENT INICIANDO — modo: ${mode} — projeto: ${projectId} ===`);
+  log(`=== STITCH AGENT — modo: ${mode} — projeto: ${projectId} ===`);
 
   let result;
   try {
     switch (mode) {
-      case 'lead':
-        result = await generateLeadPage(projectId);
-        break;
-      case 'dashboard':
-        result = await generateDashboardScreen(projectId);
-        break;
+      case 'lead':      result = await generateLeadPage(projectId); break;
+      case 'dashboard': result = await generateDashboardScreen(projectId); break;
+      case 'list':      result = await listScreens(projectId); break;
       case 'export':
-      default:
-        result = await exportProject(projectId);
-        break;
+      default:          result = await exportProject(projectId); break;
     }
 
     saveResults({ mode, ...result });
-    log('=== STITCH AGENT CONCLUÍDO ===');
+    log('=== CONCLUÍDO ===');
     console.log('\nResultado:', JSON.stringify(result, null, 2));
   } catch (err) {
     log(`ERRO: ${err.message}`);
