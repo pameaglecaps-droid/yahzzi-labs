@@ -29,8 +29,8 @@
   },
   "google": {
     "stitch": {
-      "enabled": false,
-      "projectId": "",
+      "enabled": true,
+      "projectId": "11011285245177842541",
       "defaultDevice": "mobile",
       "screens": {
         "leadPage": true,

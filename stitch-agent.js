@@ -76,14 +76,36 @@ function stitch(args, extraEnv = {}) {
 
 // Chama uma MCP tool diretamente via CLI
 function stitchTool(toolName, data, extraEnv = {}) {
-  const jsonData = JSON.stringify(data);
-  const cmd = `npx @_davideast/stitch-mcp tool ${toolName} -d '${jsonData}' -o json`;
-  log(`Stitch tool: ${toolName} ${JSON.stringify(data)}`);
-  return JSON.parse(execSync(cmd, {
-    env: { ...process.env, ...extraEnv },
-    timeout: 120000,
-    encoding: 'utf8'
-  }).trim());
+  const tmpFile = `/tmp/stitch-data-${Date.now()}.json`;
+  fs.writeFileSync(tmpFile, JSON.stringify(data));
+  const cmd = `npx @_davideast/stitch-mcp tool ${toolName} -f '${tmpFile}' -o json`;
+  log(`Stitch tool: ${toolName}`);
+  try {
+    const out = execSync(cmd, {
+      env: { ...process.env, ...extraEnv },
+      timeout: 180000,
+      encoding: 'utf8'
+    }).trim();
+    fs.unlinkSync(tmpFile);
+    return JSON.parse(out);
+  } catch (err) {
+    fs.existsSync(tmpFile) && fs.unlinkSync(tmpFile);
+    throw err;
+  }
+}
+
+// Extrai HTML e screenshot a partir do resultado de generate_screen_from_text
+function extractScreenData(result) {
+  const screens = result?.outputComponents?.[1]?.design?.screens;
+  if (!screens || !screens[0]) return null;
+  const s = screens[0];
+  return {
+    screenName: s.name,
+    htmlDownloadUrl: s.htmlCode?.downloadUrl,
+    screenshotUrl: s.screenshot?.downloadUrl,
+    designSystem: s.designSystem?.designSystem,
+    theme: s.theme?.designMd
+  };
 }
 
 // ─── SCREENS ──────────────────────────────────────────────────────────────────
